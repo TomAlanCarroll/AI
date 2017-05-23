@@ -2,6 +2,7 @@
 *Problems and solutions for various AI topics*
 
 ##How to Run
+
 ```
 # OS X (Install homebrew first)
 brew install sdl sdl_image sdl_mixer sdl_ttf portmidi mercurial
