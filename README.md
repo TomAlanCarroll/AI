@@ -1,7 +1,7 @@
 # AI
 *Problems and solutions for various AI topics*
 
-##How to Run
+## How to Run
 
 ```
 # OS X (Install homebrew first)
