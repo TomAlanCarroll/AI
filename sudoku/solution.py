@@ -27,7 +27,33 @@ def naked_twins(values):
     """
 
     # Find all instances of naked twins
+    naked_twins = []
+
+    for row in row_units:
+        possible_twins = dict((k, values[k]) for k in row if k in values and len(values[k]) == 2)
+        naked_twins += get_keys_of_duplicates(possible_twins)
+
+    for col in column_units:
+        possible_twins = dict((k, values[k]) for k in col if k in values and len(values[k]) == 2)
+        naked_twins += get_keys_of_duplicates(possible_twins)
+
+    print("twins:")
+    print(naked_twins)
+    display(values)
+
     # Eliminate the naked twins as possibilities for their peers
+
+    return values
+
+def get_keys_of_duplicates(dictionary):
+    keys = []
+    values_seen = {}
+
+    for key, val in dictionary.items():
+        if val in values_seen.keys():
+            keys.append([values_seen[val], key])
+        else:
+            values_seen[val] = key
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
@@ -110,8 +136,11 @@ def reduce_puzzle(values):
         # Use the Eliminate Strategy
         values = eliminate(values)
 
-        # Your code here: Use the Only Choice Strategy
+        # Use the Only Choice Strategy
         values = only_choice(values)
+
+        # Use the Naked Twin Strategy
+        values = naked_twins(values)
 
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
