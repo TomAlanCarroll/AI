@@ -33,6 +33,24 @@ def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [s+t for s in A for t in B]
 
+def grid_values_with_blanks(grid):
+    """
+    Convert grid into a dict of {square: char} with '_' for empties.
+    Args:
+        grid(string) - A grid in string form.
+    Returns:
+        A grid in dictionary form
+            Keys: The boxes, e.g., 'A1'
+            Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
+    """
+    assert len(grid) == 81, 'grid for grid_values must be 81 characters'
+    grid_dict = dict(zip(boxes, grid))
+    for key, val in grid_dict.items():
+        if val == '.':
+            grid_dict[key] = '_'
+
+    return grid_dict
+
 def grid_values(grid):
     """
     Convert grid into a dict of {square: char} with '123456789' for empties.
@@ -143,6 +161,10 @@ def solve(grid):
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    print('Unsolved Sudoku:')
+    display(grid_values_with_blanks(diag_sudoku_grid))
+    print('\n====================\n')
+    print('Solved Sudoku:')
     display(solve(diag_sudoku_grid))
 
     try:
