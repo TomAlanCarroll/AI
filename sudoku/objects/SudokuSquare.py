@@ -46,15 +46,15 @@ class SudokuSquare:
     def __init__(self, number=None, offsetX=0, offsetY=0, edit="Y", xLoc=0, yLoc=0):
         if number != None:
             number = str(number)
-            self.color = (2, 204, 186)
+            self.color = (86, 129, 122)
         else:
             number = ""
             self.color = (255, 255, 255)
         # print("FONTS", pygame.font.get_fonts())
-        self.font = pygame.font.SysFont('opensans', 21)
+        self.font = pygame.font.SysFont('opensans', 44)
         self.text = self.font.render(number, 1, (255, 255, 255))
         self.textpos = self.text.get_rect()
-        self.textpos = self.textpos.move(offsetX + 17, offsetY + 4)
+        self.textpos = self.textpos.move(offsetX + 14, offsetY + 6)
 
         # self.collide = pygame.Surface((25, 22))
         # self.collide = self.collide.convert()
