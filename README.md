@@ -2,7 +2,8 @@
 *Problems and solutions for various AI topics*
 
 ## How to Run
-
+1. Install [Anaconda](https://www.continuum.io/downloads)
+1. Run the following commands corresponding to your OS:
 ```
 # OS X (Install homebrew first)
 brew install sdl sdl_image sdl_mixer sdl_ttf portmidi mercurial
