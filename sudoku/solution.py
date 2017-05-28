@@ -31,29 +31,41 @@ def naked_twins(values):
 
     for row in row_units:
         possible_twins = dict((k, values[k]) for k in row if k in values and len(values[k]) == 2)
-        naked_twins += get_keys_of_duplicates(possible_twins)
+        naked_twins += get_duplicates(possible_twins)
 
     for col in column_units:
         possible_twins = dict((k, values[k]) for k in col if k in values and len(values[k]) == 2)
-        naked_twins += get_keys_of_duplicates(possible_twins)
+        naked_twins += get_duplicates(possible_twins)
 
     print("twins:")
     print(naked_twins)
     display(values)
 
     # Eliminate the naked twins as possibilities for their peers
+    # Example structure of naked_twins:
+    # [[{'F5': '37'}, {'F6': '37'}], [{'H7': '79'}, {'I7': '79'}]]
+
+
 
     return values
 
-def get_keys_of_duplicates(dictionary):
-    keys = []
+def get_duplicates(dictionary):
+    duplicates = []
     values_seen = {}
 
     for key, val in dictionary.items():
         if val in values_seen.keys():
-            keys.append([values_seen[val], key])
+            print("twin")
+            duplicate1 = {}
+            duplicate1[values_seen[val]] = val
+            duplicate2 = {}
+            duplicate2[key] = val
+
+            duplicates.append([duplicate1, duplicate2])
         else:
             values_seen[val] = key
+
+    return duplicates
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
