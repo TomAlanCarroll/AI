@@ -25,6 +25,10 @@ column_units = [cross(rows, c) for c in cols]
 #                             'C1', 'C2', 'C3']
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 
+def get_unit(position):
+    # Gets all squares in the same unit for a given position
+    return [neighbor for neighbor in square_units if position in neighbor][0]
+
 unitlist = row_units + column_units + square_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)

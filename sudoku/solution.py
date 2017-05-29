@@ -17,6 +17,25 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
+def eliminate_naked_twins(naked_twins, values):
+    # Eliminate the naked twins as possibilities for their peers
+    # Example structure of naked_twins:
+    # row twins:
+    # [{'F8': '12', 'F9': '12'}, {'I3': '79', 'I7': '79'}]
+    # col twins:
+    # [{'H7': '79', 'I7': '79'}]
+    for twin in naked_twins:
+        for key, val in twin.items():
+            print('twin: ' + key + ' - ' + val)
+            unit = get_unit(key)
+            for peer in unit:
+                if peer != key and val != values[peer]:
+                    for char in val:
+                        if char in values[peer]:
+                            print("eliminating: " + char + " from " + values[peer] + " at " + peer)
+                            #values = assign_value(values, peer, values[peer].replace(char, ''))
+                            values[peer] = values[peer].replace(char, '')
+
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
     Args:
@@ -26,26 +45,40 @@ def naked_twins(values):
         the values dictionary with the naked twins eliminated from peers.
     """
 
-    # Find all instances of naked twins
-    naked_twins = []
+    # First for rows
+    twins = []
+
+    print("before:")
+    display(values)
 
     for row in row_units:
         possible_twins = dict((k, values[k]) for k in row if k in values and len(values[k]) == 2)
-        naked_twins += get_duplicates(possible_twins)
+        twins += get_duplicates(possible_twins)
+
+    print("row twins1:")
+    print(twins)
+
+    eliminate_naked_twins(twins, values)
+
+    print("row twins2:")
+    print(twins)
+
+    # Next for cols
+    twins = []
 
     for col in column_units:
         possible_twins = dict((k, values[k]) for k in col if k in values and len(values[k]) == 2)
-        naked_twins += get_duplicates(possible_twins)
+        twins += get_duplicates(possible_twins)
 
-    print("twins:")
-    print(naked_twins)
+    print("col twins1:")
+    print(twins)
+
+    eliminate_naked_twins(twins, values)
+
+    print("col twins2:")
+    print(twins)
+    print("after:")
     display(values)
-
-    # Eliminate the naked twins as possibilities for their peers
-    # Example structure of naked_twins:
-    # [[{'F5': '37'}, {'F6': '37'}], [{'H7': '79'}, {'I7': '79'}]]
-
-
 
     return values
 
@@ -55,13 +88,11 @@ def get_duplicates(dictionary):
 
     for key, val in dictionary.items():
         if val in values_seen.keys():
-            print("twin")
-            duplicate1 = {}
-            duplicate1[values_seen[val]] = val
-            duplicate2 = {}
-            duplicate2[key] = val
+            duplicate = {}
+            duplicate[values_seen[val]] = val
+            duplicate[key] = val
 
-            duplicates.append([duplicate1, duplicate2])
+            duplicates.append(duplicate)
         else:
             values_seen[val] = key
 
