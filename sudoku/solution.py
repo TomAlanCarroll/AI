@@ -1,13 +1,14 @@
 from utils import *
 
 assignments = []
+elimination_count = 0
+
 
 def assign_value(values, box, value):
     """
     Please use this function to update your values dictionary!
     Assigns a value to a given box. If it updates the board record it.
     """
-
     # Don't waste memory appending actions that don't actually change any values
     if values[box] == value:
         return values
@@ -17,24 +18,61 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
-def eliminate_naked_twins(naked_twins, values):
-    # Eliminate the naked twins as possibilities for their peers
-    # Example structure of naked_twins:
-    # row twins:
-    # [{'F8': '12', 'F9': '12'}, {'I3': '79', 'I7': '79'}]
-    # col twins:
-    # [{'H7': '79', 'I7': '79'}]
-    for twin in naked_twins:
-        for key, val in twin.items():
-            print('twin: ' + key + ' - ' + val)
-            unit = get_unit(key)
-            for peer in unit:
-                if peer != key and val != values[peer]:
-                    for char in val:
-                        if char in values[peer]:
-                            print("eliminating: " + char + " from " + values[peer] + " at " + peer)
-                            #values = assign_value(values, peer, values[peer].replace(char, ''))
-                            values[peer] = values[peer].replace(char, '')
+
+def eliminate_twins_in_row_peers(twins, values):
+    # Eliminate the values of twins as possibilities for their row peers
+    # Example structure of twins:
+    # [(('F8', '12'), ('F9', '12')), (('I3', '79'), ('I7', '79'))]
+    global elimination_count
+    for twin_tuple in twins:
+        first_twin = twin_tuple[0][0]
+        second_twin = twin_tuple[1][0]
+        twin_value = twin_tuple[0][1]  # == twin_tuple[1][1]
+        for num in twin_value:
+            row_to_eliminate = get_row(first_twin[0])
+            for position in row_to_eliminate:
+                if position != first_twin and position != second_twin and num in values[position]:
+                    print("eliminating in row: " + num + " from " + values[position] + " at " + position)
+                    elimination_count += 1
+                    # values[position] = values[position].replace(num, '')
+                    values = assign_value(values, position, values[position].replace(num, ''))
+
+
+def eliminate_twins_in_column_peers(twins, values):
+    # Eliminate the values of twins as possibilities for their row peers
+    # Example structure of twins:
+    # [(('H7', '79'), ('I7', '79'))]
+    global elimination_count
+    for twin_tuple in twins:
+        first_twin = twin_tuple[0][0]
+        second_twin = twin_tuple[1][0]
+        twin_value = twin_tuple[0][1]  # == twin_tuple[1][1]
+        for num in twin_value:
+            col_to_eliminate = get_col(first_twin[1])
+            for position in col_to_eliminate:
+                if position != first_twin and position != second_twin and num in values[position]:
+                    print("eliminating in col: " + num + " from " + values[position] + " at " + position)
+                    elimination_count += 1
+                    # values[position] = values[position].replace(num, '')
+                    values = assign_value(values, position, values[position].replace(num, ''))
+
+
+def eliminate_twins_in_unit_peers(all_twins, values):
+    global elimination_count
+    for twin_tuple in all_twins:
+        first_twin = twin_tuple[0][0]
+        second_twin = twin_tuple[1][0]
+        twin_value = twin_tuple[0][1]  # == twin_tuple[1][1]
+        for num in twin_value:
+            unit_to_eliminate = get_unit(first_twin)
+            if unit_to_eliminate == get_unit(second_twin):  # Only eliminate if both twins are in the same unit
+                for position in unit_to_eliminate:
+                    if position != first_twin and position != second_twin and num in values[position]:
+                        print("eliminating in unit: " + num + " from " + values[position] + " at " + position)
+                        elimination_count += 1
+                        # values[position] = values[position].replace(num, '')
+                        values = assign_value(values, position, values[position].replace(num, ''))
+
 
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
@@ -46,41 +84,24 @@ def naked_twins(values):
     """
 
     # First for rows
-    twins = []
-
-    print("before:")
-    display(values)
+    row_twins = []
+    col_twins = []
 
     for row in row_units:
         possible_twins = dict((k, values[k]) for k in row if k in values and len(values[k]) == 2)
-        twins += get_duplicates(possible_twins)
+        row_twins += get_duplicates(possible_twins)
 
-    print("row twins1:")
-    print(twins)
-
-    eliminate_naked_twins(twins, values)
-
-    print("row twins2:")
-    print(twins)
-
-    # Next for cols
-    twins = []
+    eliminate_twins_in_row_peers(row_twins, values)
 
     for col in column_units:
         possible_twins = dict((k, values[k]) for k in col if k in values and len(values[k]) == 2)
-        twins += get_duplicates(possible_twins)
+        col_twins += get_duplicates(possible_twins)
 
-    print("col twins1:")
-    print(twins)
-
-    eliminate_naked_twins(twins, values)
-
-    print("col twins2:")
-    print(twins)
-    print("after:")
-    display(values)
+    all_twins = row_twins + col_twins
+    eliminate_twins_in_unit_peers(all_twins, values)
 
     return values
+
 
 def get_duplicates(dictionary):
     duplicates = []
@@ -88,19 +109,17 @@ def get_duplicates(dictionary):
 
     for key, val in dictionary.items():
         if val in values_seen.keys():
-            duplicate = {}
-            duplicate[values_seen[val]] = val
-            duplicate[key] = val
-
-            duplicates.append(duplicate)
+            duplicates.append(((values_seen[val], val), (key, val)))
         else:
             values_seen[val] = key
 
     return duplicates
 
+
 def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [s+t for s in A for t in B]
+
 
 def grid_values_with_blanks(grid):
     """
@@ -120,6 +139,7 @@ def grid_values_with_blanks(grid):
 
     return grid_dict
 
+
 def grid_values(grid):
     """
     Convert grid into a dict of {square: char} with '123456789' for empties.
@@ -138,6 +158,7 @@ def grid_values(grid):
 
     return grid_dict
 
+
 def display(values):
     """
     Display the values as a 2-D grid.
@@ -152,6 +173,7 @@ def display(values):
         if r in 'CF': print(line)
     return
 
+
 def eliminate(values):
     solved_vals = [box for box in values.keys() if len(values[box]) == 1]
 
@@ -162,6 +184,7 @@ def eliminate(values):
 
     return values
 
+
 def only_choice(values):
     for unit in unitlist:
         for digit in cols:
@@ -169,6 +192,7 @@ def only_choice(values):
             if len(items) == 1:
                 values = assign_value(values, items[0], digit)
     return values
+
 
 def reduce_puzzle(values):
     stalled = False
@@ -183,7 +207,7 @@ def reduce_puzzle(values):
         values = only_choice(values)
 
         # Use the Naked Twin Strategy
-        #values = naked_twins(values)
+        values = naked_twins(values)
 
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
@@ -196,6 +220,7 @@ def reduce_puzzle(values):
             return False
 
     return values
+
 
 def search(values):
     "Using depth-first search and propagation, create a search tree and solve the sudoku."
@@ -220,6 +245,7 @@ def search(values):
             if attempt:
                 return attempt
 
+
 def solve(grid):
     """
     Find the solution to a Sudoku grid.
@@ -238,6 +264,8 @@ if __name__ == '__main__':
     print('\n====================\n')
     print('Solved Sudoku:')
     display(solve(diag_sudoku_grid))
+
+    print("Number of possible values eliminated by naked_twins: ", elimination_count)
 
     try:
         from visualize import visualize_assignments
