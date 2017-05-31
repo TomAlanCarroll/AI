@@ -20,9 +20,11 @@ def assign_value(values, box, value):
 
 
 def eliminate_twins_in_row_peers(twins, values):
-    # Eliminate the values of twins as possibilities for their row peers
-    # Example structure of twins:
-    # [(('F8', '12'), ('F9', '12')), (('I3', '79'), ('I7', '79'))]
+    """
+    Eliminate the values of twins as possibilities for their row peers
+    Example structure of twins:
+    [(('F8', '12'), ('F9', '12')), (('I3', '79'), ('I7', '79'))]
+    """
     global elimination_count
     for twin_tuple in twins:
         first_twin = twin_tuple[0][0]
@@ -39,9 +41,11 @@ def eliminate_twins_in_row_peers(twins, values):
 
 
 def eliminate_twins_in_column_peers(twins, values):
-    # Eliminate the values of twins as possibilities for their row peers
-    # Example structure of twins:
-    # [(('H7', '79'), ('I7', '79'))]
+    """
+    Eliminate the values of twins as possibilities for their column peers
+    Example structure of twins:
+    [(('H7', '79'), ('I7', '79'))]
+    """
     global elimination_count
     for twin_tuple in twins:
         first_twin = twin_tuple[0][0]
@@ -58,6 +62,11 @@ def eliminate_twins_in_column_peers(twins, values):
 
 
 def eliminate_twins_in_unit_peers(all_twins, values):
+    """
+    Eliminate the values of twins as possibilities for their column peers
+    Example structure of twins:
+    [(('H7', '79'), ('I7', '79'))]
+    """
     global elimination_count
     for twin_tuple in all_twins:
         first_twin = twin_tuple[0][0]
