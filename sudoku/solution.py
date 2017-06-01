@@ -34,7 +34,7 @@ def eliminate_twins_in_row_peers(twins, values):
             row_to_eliminate = get_row(first_twin[0])
             for position in row_to_eliminate:
                 if position != first_twin and position != second_twin and num in values[position]:
-                    print("eliminating in row: " + num + " from " + values[position] + " at " + position)
+                    #print("Eliminating in row: " + num + " from " + values[position] + " at " + position)
                     elimination_count += 1
                     # values[position] = values[position].replace(num, '')
                     values = assign_value(values, position, values[position].replace(num, ''))
@@ -55,7 +55,7 @@ def eliminate_twins_in_column_peers(twins, values):
             col_to_eliminate = get_col(first_twin[1])
             for position in col_to_eliminate:
                 if position != first_twin and position != second_twin and num in values[position]:
-                    print("eliminating in col: " + num + " from " + values[position] + " at " + position)
+                    #print("Eliminating in col: " + num + " from " + values[position] + " at " + position)
                     elimination_count += 1
                     # values[position] = values[position].replace(num, '')
                     values = assign_value(values, position, values[position].replace(num, ''))
@@ -77,7 +77,7 @@ def eliminate_twins_in_unit_peers(all_twins, values):
             if unit_to_eliminate == get_unit(second_twin):  # Only eliminate if both twins are in the same unit
                 for position in unit_to_eliminate:
                     if position != first_twin and position != second_twin and num in values[position]:
-                        print("eliminating in unit: " + num + " from " + values[position] + " at " + position)
+                        #print("Eliminating in unit: " + num + " from " + values[position] + " at " + position)
                         elimination_count += 1
                         # values[position] = values[position].replace(num, '')
                         values = assign_value(values, position, values[position].replace(num, ''))
@@ -105,6 +105,8 @@ def naked_twins(values):
     for col in column_units:
         possible_twins = dict((k, values[k]) for k in col if k in values and len(values[k]) == 2)
         col_twins += get_duplicates(possible_twins)
+
+    eliminate_twins_in_column_peers(col_twins, values)
 
     all_twins = row_twins + col_twins
     eliminate_twins_in_unit_peers(all_twins, values)
@@ -231,17 +233,51 @@ def reduce_puzzle(values):
     return values
 
 
-def search(values):
-    "Using depth-first search and propagation, create a search tree and solve the sudoku."
+def unique_values(boxes):
+    seen = set()
+    for x in g:
+        if x in s: return False
+        s.add(x)
+    return True
+
+
+def diagonals_are_unique(solution):
+    diagonal1 = get_diagonal_1()
+    diagonal2 = get_diagonal_2()
+
+    seen = set()
+
+    for box in diagonal1:
+        if solution[box] in seen:
+            return False  # Diagonal 1 boxes are not unique 1..9
+        else:
+            seen.add(solution[box])
+
+    seen = set()
+
+    for box in diagonal2:
+        if solution[box] in seen:
+            return False  # Diagonal 2 boxes are not unique 1..9
+        else:
+            seen.add(solution[box])
+
+    return True
+
+
+def search(values, enforce_diagonals):
     # First, reduce the puzzle using the previous function
     solution = reduce_puzzle(values)
 
     if solution is False:
         return False
 
+    all_boxes_contain_one = len([box for box in solution.keys() if len(values[box]) == 1]) == 81
+
     # If solved by reduce_puzzle return the solution
-    if len([box for box in solution.keys() if len(values[box]) == 1]) == 81:
+    if all_boxes_contain_one:
         return solution
+    # elif enforce_diagonals and all_boxes_contain_one and diagonals_are_unique(values):
+    #     return solution
     else:
         # Choose one of the unfilled squares with the fewest possibilities
         n, box = min((len(values[box]), box) for box in boxes if len(values[box]) > 1)
@@ -250,29 +286,38 @@ def search(values):
             sudoku_copy[box] = value
 
             # recurse the copy
-            attempt = search(sudoku_copy)
+            attempt = search(sudoku_copy, enforce_diagonals)
             if attempt:
                 return attempt
 
 
-def solve(grid):
+def solve_sudoku(grid, enforce_diagonals):
     """
     Find the solution to a Sudoku grid.
     Args:
         grid(string): a string representing a sudoku grid.
-            Example: '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+            Example: '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+        enforce_diagonals(bool): Enforce that the two main diagonals each contain 1..9 only once
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
-    return search(grid_values(grid))
+    return search(grid_values(grid), enforce_diagonals)
 
 if __name__ == '__main__':
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    print('Unsolved Sudoku:')
-    display(grid_values_with_blanks(diag_sudoku_grid))
+    difficult_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+    print('Unsolved Difficult Sudoku:')
+    display(grid_values_with_blanks(difficult_sudoku_grid))
     print('\n====================\n')
-    print('Solved Sudoku:')
-    display(solve(diag_sudoku_grid))
+    print('Solved Difficult Sudoku:')
+    display(solve_sudoku(difficult_sudoku_grid, False))
+
+    diagonal_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    print('Unsolved Diagonal Sudoku:')
+    display(grid_values_with_blanks(diagonal_sudoku_grid))
+    print('\n====================\n')
+    print('Solved Diagonal Sudoku:')
+    diagonals = True
+    display(solve_sudoku(diagonal_sudoku_grid, diagonals))
 
     print("Number of possible values eliminated by naked_twins: ", elimination_count)
 
