@@ -2,14 +2,14 @@ from utils import *
 
 assignments = []
 elimination_count = 0
-
+iteration_count = 0
+reduction_count = 0
 
 def assign_value(values, box, value):
     """
     Please use this function to update your values dictionary!
     Assigns a value to a given box. If it updates the board record it.
     """
-    # Don't waste memory appending actions that don't actually change any values
     if values[box] == value:
         return values
 
@@ -196,8 +196,9 @@ def eliminate(values):
     return values
 
 
-def only_choice(values):
-    for unit in unitlist:
+def only_choice(values, enforce_diagonals):
+
+    for unit in unit_list_including_diagonals if enforce_diagonals else unit_list:
         for digit in cols:
             items = [box for box in unit if digit in values[box]]
             if len(items) == 1:
@@ -205,9 +206,12 @@ def only_choice(values):
     return values
 
 
-def reduce_puzzle(values):
+def reduce_puzzle(values, enforce_diagonals):
     stalled = False
+    global reduction_count
     while not stalled:
+        reduction_count += 1
+
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
@@ -215,7 +219,7 @@ def reduce_puzzle(values):
         values = eliminate(values)
 
         # Use the Only Choice Strategy
-        values = only_choice(values)
+        values = only_choice(values, enforce_diagonals)
 
         # Use the Naked Twin Strategy
         values = naked_twins(values)
@@ -265,8 +269,11 @@ def diagonals_are_unique(solution):
 
 
 def search(values, enforce_diagonals):
+    global iteration_count
+    iteration_count += 1
+
     # First, reduce the puzzle using the previous function
-    solution = reduce_puzzle(values)
+    solution = reduce_puzzle(values, enforce_diagonals)
 
     if solution is False:
         return False
@@ -301,7 +308,15 @@ def solve_sudoku(grid, enforce_diagonals):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
-    return search(grid_values(grid), enforce_diagonals)
+    global iteration_count, reduction_count
+    iteration_count = 0
+    reduction_count = 0
+    solved = search(grid_values(grid), enforce_diagonals)
+    print('Solved in', iteration_count, 'search iterations' if iteration_count > 1 else 'search iteration', 'with',
+          reduction_count, 'reduction strategy iterations' if reduction_count > 1 else 'reduction strategy iteration')
+    display(solved)
+    print('\n====================\n')
+    return solved
 
 if __name__ == '__main__':
     difficult_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
@@ -309,7 +324,7 @@ if __name__ == '__main__':
     display(grid_values_with_blanks(difficult_sudoku_grid))
     print('\n====================\n')
     print('Solved Difficult Sudoku:')
-    display(solve_sudoku(difficult_sudoku_grid, False))
+    solve_sudoku(difficult_sudoku_grid, False)
 
     diagonal_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     print('Unsolved Diagonal Sudoku:')
@@ -317,7 +332,7 @@ if __name__ == '__main__':
     print('\n====================\n')
     print('Solved Diagonal Sudoku:')
     diagonals = True
-    display(solve_sudoku(diagonal_sudoku_grid, diagonals))
+    solve_sudoku(diagonal_sudoku_grid, diagonals)
 
     print("Number of possible values eliminated by naked_twins: ", elimination_count)
 

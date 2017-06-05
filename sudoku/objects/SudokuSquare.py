@@ -54,7 +54,7 @@ class SudokuSquare:
         self.font = pygame.font.SysFont('opensans', 44)
         self.text = self.font.render(number, 1, (255, 255, 255))
         self.textpos = self.text.get_rect()
-        self.textpos = self.textpos.move(offsetX + 14, offsetY + 6)
+        self.textpos = self.textpos.move(offsetX + 15, offsetY + 7)
 
         # self.collide = pygame.Surface((25, 22))
         # self.collide = self.collide.convert()

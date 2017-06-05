@@ -40,15 +40,20 @@ def get_col(position):
     # Gets row from position ('1', '2', ... '9')
     return [col for col in column_units if col[0][1] == position][0]
 
+diagonal_units = [['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9'],
+             ['I1', 'H2', 'G3', 'F4', 'E5', 'D6', 'C7', 'B8', 'A9']]
+
 
 def get_diagonal_1():
-    return ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9']
+    return diagonal_units[0]
 
 
 def get_diagonal_2():
-    return ['I1', 'H2', 'G3', 'F4', 'E5', 'D6', 'C7', 'B8', 'A9']
+    return diagonal_units[1]
 
 
-unitlist = row_units + column_units + square_units
-units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+unit_list = row_units + column_units + square_units
+units = dict((s, [u for u in unit_list if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
+unit_list_including_diagonals = row_units + column_units + square_units + diagonal_units
