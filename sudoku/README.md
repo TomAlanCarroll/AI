@@ -64,7 +64,7 @@ Solved in 5 search iterations with 18 reduction strategy iterations
 ```
 
 If you installed pygame the puzzle solution is shown:
-![images/difficult-sudoku.png](Difficult Sudoku Solution)
+![Difficult Sudoku Solution](images/difficult-sudoku.png)
 
 ## 2. Diagonal Sudoku Puzzle
 A Sudoku puzzle with the diagonal constraints is the second to be solved.
@@ -101,4 +101,4 @@ Solved in 1 search iteration with 13 reduction strategy iterations
 ```
 
 If you installed pygame the puzzle solution is shown:
-![/images/diagonal-sudoku.png](Diagonal Sudoku Solution)
+![Diagonal Sudoku Solution](images/diagonal-sudoku.png)
