@@ -315,7 +315,6 @@ def solve_sudoku(grid, enforce_diagonals):
     print('Solved in', iteration_count, 'search iterations' if iteration_count > 1 else 'search iteration', 'with',
           reduction_count, 'reduction strategy iterations' if reduction_count > 1 else 'reduction strategy iteration')
     display(solved)
-    print('\n====================\n')
     return solved
 
 if __name__ == '__main__':
@@ -325,6 +324,8 @@ if __name__ == '__main__':
     print('\n====================\n')
     print('Solved Difficult Sudoku:')
     solve_sudoku(difficult_sudoku_grid, False)
+
+    print('\n----------------------------------------\n')
 
     diagonal_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     print('Unsolved Diagonal Sudoku:')
