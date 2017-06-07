@@ -1,13 +1,86 @@
-from utils import *
+"""
+Solution for solving Sudoku puzzles
+"""
+
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+def cross(a, b):
+    """
+    Cross product of elements in A and elements in B.
+    """
+    return [s+t for s in a for t in b]
+
+# Complete 9x9 grid
+# ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9',
+#  'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9',
+#  'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9',
+#  ... ]
+boxes = cross(rows, cols)
+
+# Row array
+# Example: row_units[0] = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9']
+row_units = [cross(r, cols) for r in rows]
+
+# Column Array
+# Example: column_units[0] = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1']
+column_units = [cross(rows, c) for c in cols]
+
+# 9 section Square Array
+# Example: square_units[0] = ['A1', 'A2', 'A3',
+#                             'B1', 'B2', 'B3',
+#                             'C1', 'C2', 'C3']
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+
+
+def get_unit(position):
+    """
+    Gets all squares in the same unit for a given position
+    """
+    # Gets all squares in the same unit for a given position
+    return [neighbor for neighbor in square_units if position in neighbor][0]
+
+
+def get_row(position):
+    """
+    Gets row from position ('A', 'B', ... 'I')
+    """
+    return [row for row in row_units if row[0][0] == position][0]
+
+
+def get_col(position):
+    """
+    Gets row from position ('1', '2', ... '9')
+    """
+    return [col for col in column_units if col[0][1] == position][0]
+
+diagonal_units = [['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9'],
+             ['I1', 'H2', 'G3', 'F4', 'E5', 'D6', 'C7', 'B8', 'A9']]
+
+
+def get_diagonal_1():
+    return diagonal_units[0]
+
+
+def get_diagonal_2():
+    return diagonal_units[1]
+
+
+unit_list = row_units + column_units + square_units
+units = dict((s, [u for u in unit_list if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
+# The unit list which includes the two main diagonals for diagonal Sudoku
+unit_list_including_diagonals = row_units + column_units + square_units + diagonal_units
 
 assignments = []
 elimination_count = 0
 iteration_count = 0
 reduction_count = 0
 
+
 def assign_value(values, box, value):
     """
-    Please use this function to update your values dictionary!
     Assigns a value to a given box. If it updates the board record it.
     """
     if values[box] == value:
@@ -84,7 +157,8 @@ def eliminate_twins_in_unit_peers(all_twins, values):
 
 
 def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
+    """
+    Eliminate values using the naked twins strategy.
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
 
@@ -115,6 +189,9 @@ def naked_twins(values):
 
 
 def get_duplicates(dictionary):
+    """
+    Gets a list of tuples for value duplicates within the provided dictionary
+    """
     duplicates = []
     values_seen = {}
 
@@ -125,11 +202,6 @@ def get_duplicates(dictionary):
             values_seen[val] = key
 
     return duplicates
-
-
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
-    return [s+t for s in A for t in B]
 
 
 def grid_values_with_blanks(grid):
@@ -176,7 +248,7 @@ def display(values):
     Args:
         values(dict): The sudoku in dictionary form
     """
-    width = 1 + max(len(values[s]) for s in boxes)
+    width = 1 + max(len(values[s]) for s in values)
     line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
         print(''.join(values[r + c].center(width) + ('|' if c in '36' else '')
@@ -185,16 +257,32 @@ def display(values):
     return
 
 
-def eliminate(values):
+def eliminate(values, enforce_diagonals):
     solved_vals = [box for box in values.keys() if len(values[box]) == 1]
 
     for box in solved_vals:
         digit = values[box]
+
+        if enforce_diagonals:
+            values = eliminate_in_diagonals(box, digit, values)
+
         for peer in peers[box]:
             values = assign_value(values, peer, values[peer].replace(digit, ''))
 
     return values
 
+def eliminate_in_diagonals(solved_box, digit, values):
+    if solved_box in get_diagonal_1():
+        for diagonal_peer in get_diagonal_1():
+            if diagonal_peer != solved_box:
+                values = assign_value(values, diagonal_peer, values[diagonal_peer].replace(digit, ''))
+
+    if solved_box in get_diagonal_2():
+        for diagonal_peer in get_diagonal_2():
+            if diagonal_peer != solved_box:
+                values = assign_value(values, diagonal_peer, values[diagonal_peer].replace(digit, ''))
+
+    return values
 
 def only_choice(values, enforce_diagonals):
 
@@ -216,7 +304,7 @@ def reduce_puzzle(values, enforce_diagonals):
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
         # Use the Eliminate Strategy
-        values = eliminate(values)
+        values = eliminate(values, enforce_diagonals)
 
         # Use the Only Choice Strategy
         values = only_choice(values, enforce_diagonals)
@@ -237,11 +325,12 @@ def reduce_puzzle(values, enforce_diagonals):
     return values
 
 
-def unique_values(boxes):
+def unique_values(grid):
     seen = set()
-    for x in g:
-        if x in s: return False
-        s.add(x)
+    for x in grid:
+        if x in seen:
+            return False
+        seen.add(x)
     return True
 
 
@@ -317,8 +406,14 @@ def solve_sudoku(grid, enforce_diagonals):
     display(solved)
     return solved
 
+def solve(grid):
+    """
+    Convenience method for tests
+    """
+    return solve_sudoku(grid, True)
+
 if __name__ == '__main__':
-    difficult_sudoku_grid = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+    difficult_sudoku_grid = '9.1....8.8.5.7..4.2.4....6...7......5..............83.3..6......9................'
     print('Unsolved Difficult Sudoku:')
     display(grid_values_with_blanks(difficult_sudoku_grid))
     print('\n====================\n')
@@ -327,7 +422,7 @@ if __name__ == '__main__':
 
     print('\n----------------------------------------\n')
 
-    diagonal_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diagonal_sudoku_grid = '9.1....8.8.5.7..4.2.4....6...7......5..............83.3..6......9................'
     print('Unsolved Diagonal Sudoku:')
     display(grid_values_with_blanks(diagonal_sudoku_grid))
     print('\n====================\n')
