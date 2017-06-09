@@ -12,10 +12,10 @@ Constraint propagation has been used to implement the naked twins strategy by en
 1. For each column in the puzzle, find all twins that can be eliminated and remove them from their relative columns.
 1. For each 3x3 unit in the puzzle, find all twins that can be eliminated and remove them from their relative unit.
 
-It is important to note that twin elimination may not necessarily extend outside of twins' rows, columns, or units.
+It is important to note that twin elimination may not necessarily extend outside of twins' rows, columns, or units (or diagonal peers, if applicable).
 
 ## How do we apply constraint propagation to solve the diagonal sudoku problem?
-Constraint propagation has been used to solve the diagonal sudoku by adding the diagonals to the set of constraints. This was done by adding the main 2 diagonals to the set of 3x3 units for the sudoku puzzle. In this way the diagonal constraint was enforced for depth-first search.
+Constraint propagation has been used to solve the diagonal sudoku by adding the diagonals to the set of constraints. This was done by adding the main 2 diagonals to the set of 3x3 units for the sudoku puzzle. In this way the diagonal constraint was enforced for depth-first search in addition to the process-of-elimination strategies.
 
 ## How to Run
 1. Follow the setup instructions in the AI [README.md](../README.md)
